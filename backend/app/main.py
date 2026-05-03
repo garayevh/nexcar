@@ -4,6 +4,7 @@ from fastapi.security import HTTPBearer
 from fastapi.openapi.utils import get_openapi
 from app.core.database import engine, Base
 from app.routes import auth, listings
+from fastapi.staticfiles import StaticFiles
 
 Base.metadata.create_all(bind=engine)
 
@@ -21,6 +22,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.mount("/static", StaticFiles(directory="/home/ubuntu/nexcar/backend/static"), name="static")
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(listings.router, prefix="/api/listings", tags=["listings"])
 

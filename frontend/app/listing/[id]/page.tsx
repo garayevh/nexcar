@@ -11,6 +11,7 @@ export default function ListingPage() {
   const [listing, setListing] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [showPhone, setShowPhone] = useState(false);
+  const [activePhoto, setActivePhoto] = useState(0);
 
   useEffect(() => {
     fetch(`http://98.88.80.199:8000/api/listings/${id}`)
@@ -63,10 +64,42 @@ export default function ListingPage() {
           {/* LEFT - Photo + Details */}
           <div className="lg:col-span-2 flex flex-col gap-6">
 
-            {/* Photo */}
-            <div className="bg-gray-900 border border-gray-800 rounded-2xl h-72 flex items-center justify-center">
-              <Car size={80} className="text-gray-600" />
-            </div>
+            {/* Photo Slider */}
+            {listing.photos && listing.photos.length > 0 ? (
+              <div className="flex flex-col gap-3">
+                <div className="rounded-2xl overflow-hidden bg-gray-900 relative" style={{height: '360px'}}>
+                  <img src={`http://98.88.80.199:8000${listing.photos[activePhoto]}`} className="w-full h-full object-contain" />
+                  {listing.photos.length > 1 && (
+                    <>
+                      <button onClick={() => setActivePhoto(p => p === 0 ? listing.photos.length - 1 : p - 1)}
+                        className="absolute left-3 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white w-10 h-10 rounded-full flex items-center justify-center text-xl transition">‹</button>
+                      <button onClick={() => setActivePhoto(p => p === listing.photos.length - 1 ? 0 : p + 1)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white w-10 h-10 rounded-full flex items-center justify-center text-xl transition">›</button>
+                      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1">
+                        {listing.photos.map((_: string, i: number) => (
+                          <div key={i} onClick={() => setActivePhoto(i)}
+                            className={`w-2 h-2 rounded-full cursor-pointer transition ${i === activePhoto ? 'bg-[#e8ff47]' : 'bg-white/40'}`} />
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+                {listing.photos.length > 1 && (
+                  <div className="flex gap-2 overflow-x-auto pb-1">
+                    {listing.photos.map((p: string, i: number) => (
+                      <div key={i} onClick={() => setActivePhoto(i)}
+                        className={`w-20 h-16 rounded-xl overflow-hidden flex-shrink-0 cursor-pointer border-2 transition ${i === activePhoto ? 'border-[#e8ff47]' : 'border-gray-700'}`}>
+                        <img src={`http://98.88.80.199:8000${p}`} className="w-full h-full object-cover" />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="bg-gray-900 border border-gray-800 rounded-2xl h-72 flex items-center justify-center">
+                <Car size={80} className="text-gray-600" />
+              </div>
+            )}
 
             {/* Title */}
             <div>

@@ -161,7 +161,8 @@ def get_listing(listing_id: int, db: Session = Depends(get_db)):
         "seller_name": listing.seller.name,
         "seller_phone": listing.seller.phone,
         "expires_at": listing.expires_at,
-        "created_at": listing.created_at
+        "created_at": listing.created_at,
+        "photos": [p.url for p in listing.photos]
     }
 
 @router.patch("/{listing_id}/sold")
@@ -179,3 +180,36 @@ def mark_as_sold(
     listing.status = ListingStatus.sold
     db.commit()
     return {"message": "Машина отмечена как проданная ✅"}
+
+from fastapi import UploadFile, File
+import os, shutil, uuid
+
+@router.post("/{listing_id}/photos")
+async def upload_photo(
+    listing_id: int,
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    listing = db.query(Listing).filter(Listing.id == listing_id).first()
+    if not listing:
+        raise HTTPException(status_code=404, detail="Объявление не найдено")
+    if listing.seller_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Это не ваше объявление")
+
+    ext = file.filename.split(".")[-1]
+    filename = f"{uuid.uuid4()}.{ext}"
+    path = f"/home/ubuntu/nexcar/backend/static/photos/{filename}"
+
+    with open(path, "wb") as f:
+        shutil.copyfileobj(file.file, f)
+
+    from app.models.models import ListingPhoto
+    photo = ListingPhoto(
+        listing_id=listing_id,
+        url=f"/static/photos/{filename}",
+        is_main=len(listing.photos) == 0
+    )
+    db.add(photo)
+    db.commit()
+    return {"photo_url": f"/static/photos/{filename}"}
