@@ -38,6 +38,7 @@ export default function Home() {
         <div className="flex items-center gap-3">
           {user ? (
             <>
+              <a href="/create" className="bg-[#e8ff47] text-black px-4 py-2 rounded-lg text-sm font-semibold hover:opacity-90 transition">+ Elan yerləşdir</a>
               <span className="text-sm text-gray-400">Salam, {user.name.split(' ')[0]}</span>
               <button
                 onClick={logout}
